@@ -81,7 +81,8 @@ func NewRedisSentinelStopCommand(dep fx.Option, options *core.RedisCommand) *cob
 	cmd.Flags().StringVarP(&options.Addr, "addr", "a", "", "")
 	cmd.Flags().StringVarP(&options.Password, "password", "p", "", "The password of server")
 	cmd.Flags().StringVarP(&options.Conf, "conf", "c", "", "The config path of Redis server")
-	cmd.Flags().BoolVarP(&options.FlushConfig, "flush-config", "", true, " Force Sentinel to rewrite its configuration on disk")
+	cmd.Flags().BoolVarP(&options.FlushConfig, "flush-config", "", true, "Force Sentinel to rewrite its configuration on disk")
+	cmd.Flags().StringVarP(&options.RedisPath, "redis-path", "", "", "The path of the redis-server command")
 	return cmd
 }
 
@@ -98,8 +99,7 @@ func NewRedisCachePenetrationCommand(dep fx.Option, options *core.RedisCommand) 
 	cmd.Flags().StringVarP(&options.Addr, "addr", "a", "", "")
 	cmd.Flags().StringVarP(&options.Password, "password", "p", "", "The password of server")
 	cmd.Flags().StringVarP(&options.Conf, "conf", "c", "", "The config of Redis server")
-	cmd.Flags().IntVarP(&options.Frequency, "frequency", "f", 0, "")
-	cmd.Flags().IntVarP(&options.ConcurrentNum, "concurrentnum", "", 1, "")
+	cmd.Flags().IntVarP(&options.RequestNum, "requestnum", "", 0, "The number of requests")
 
 	return cmd
 }
