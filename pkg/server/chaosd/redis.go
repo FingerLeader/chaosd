@@ -14,11 +14,7 @@
 package chaosd
 
 import (
-	"fmt"
-	"math"
 	"os/exec"
-	"sync"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/pingcap/errors"
@@ -58,36 +54,14 @@ func (redisAttack) Attack(options core.AttackConfig, env Environment) error {
 		return env.Chaos.shutdownSentinelServer(attack, cli)
 
 	case core.RedisCachePenetrationAction:
-		var wg sync.WaitGroup
-		start := time.Now()
-		num := int(math.Ceil(float64(attack.Frequency) / float64(attack.ConcurrentNum)))
-		concurrentNum := attack.ConcurrentNum
-		wg.Add(attack.Frequency)
-		for i := 0; i < num; i++ {
-			if attack.Frequency-i*concurrentNum < concurrentNum {
-				concurrentNum = attack.Frequency - i*concurrentNum
-			}
-
-			go func(concurrentNum int) {
-				for j := 0; j < concurrentNum; j++ {
-					cli.Get(cli.Context(), "CHAOS_MESH_nqE3BWm7khHv")
-					wg.Done()
-				}
-			}(concurrentNum)
+		pipe := cli.Pipeline()
+		for i := 0; i < attack.Frequency; i++ {
+			pipe.Get(cli.Context(), "CHAOS_MESH_nqE3BWm7khHv")
 		}
-		// limitedChannel := make(chan struct{}, attack.ConcurrentNum)
-		// wg.Add(attack.Frequency)
-		// for i := 0; i < attack.Frequency; i++ {
-		// 	limitedChannel <- struct{}{}
-
-		// 	go func() {
-		// 		defer wg.Done()
-		// 		cli.Get(cli.Context(), "CHAOS_MESH_nqE3BWm7khHv")
-		// 		<-limitedChannel
-		// 	}()
-		// }
-		wg.Wait()
-		fmt.Println(time.Now().Sub(start))
+		_, err := pipe.Exec(cli.Context())
+		if err != nil {
+			return errors.WithStack(err)
+		}
 	}
 	return nil
 }
